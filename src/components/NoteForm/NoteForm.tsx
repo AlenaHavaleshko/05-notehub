@@ -31,10 +31,9 @@ export default function NoteForm({ onCloseModal }: NoteFormProps) {
   const { mutate, isPending } = useMutation({
     mutationFn: (noteData: NewNoteData) => createNote(noteData),
     onSuccess() {
-      //console.log("onSuccess", queryClient);
       queryClient.invalidateQueries({
         queryKey: ["notes"],
-      }); // после того как мутаци выполнится успешно - сделать  рефетч всей коллекции (инвалидейтКвери)
+      }); 
       onCloseModal();
     },
   });

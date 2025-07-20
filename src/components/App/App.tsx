@@ -1,14 +1,18 @@
 import { useState } from "react";
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { fetchNotes } from "../../services/noteService";
+import { Toaster } from "react-hot-toast";
+import { toast } from "react-hot-toast";
+import { useEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import Pagination from "../Pagination/Pagination";
 import NoteList from "../NoteList/NoteList";
 import SearchBox from "../SearchBox/SearchBox";
 import Modal from "../Modal/Modal";
 import NoteForm from "../NoteForm/NoteForm";
+import Loader from "../Loader/Loader";
+import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import css from "./App.module.css";
-
 
 export default function App() {
   // стани (для пошуку searchQuery (стан пошуку))
@@ -18,36 +22,57 @@ export default function App() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, isError, isSuccess } = useQuery({
     queryKey: ["notes", searchQuery, currentPage],
-    queryFn: () => fetchNotes({ search: searchQuery || "", page: currentPage,  perPage: 12}),
+    queryFn: () =>
+      fetchNotes({ search: searchQuery || "", page: currentPage, perPage: 12 }),
     placeholderData: keepPreviousData,
   });
-
-  const totalPages = data?.total_pages ?? 0;
-  console.log(totalPages)
+  const totalPages = data?.totalPages ?? 0;
 
   const updateSearchQuery = useDebouncedCallback((newSearchQuery: string) => {
     setSearchQuery(newSearchQuery);
     setCurrentPage(1);
   }, 300);
 
+  // results?.length === 0)
+
+  useEffect(() => {
+  if (isSuccess && data?.notes?.length === 0) {
+    toast.error("No movies found for your request.");
+  }
+}, [isSuccess, data]);
+
   return (
     <>
       <div className={css.app}>
         <header className={css.toolbar}>
+          <Toaster position="top-center" />
           <SearchBox value={searchQuery} onSearch={updateSearchQuery} />
-          <Pagination page={currentPage} total={totalPages} onChange={setCurrentPage}/>
+          {isLoading && <Loader />}
+          {isError && (
+            <ErrorMessage
+              message={error instanceof Error ? error.message : "Unknown error"}
+            />
+          )}
+          {isSuccess && totalPages > 1 && (
+            <Pagination
+              page={currentPage}
+              total={totalPages}
+              onChange={setCurrentPage}
+            />
+          )}
           <button className={css.button} onClick={openModal}>
             Create note +
           </button>
         </header>
-        <NoteList
-          notes={data?.notes ?? []}
-          isLoading={isLoading}
-          error={error}
-        />
-        {isLoading && <strong className={css.loading}>Loading tasks...</strong>}
+        {data?.notes && data?.notes.length > 0 && (
+          <NoteList
+            notes={data?.notes ?? []}
+            isLoading={isLoading}
+            error={error}
+          />
+        )}
         {error && <strong>Ooops there was an error...</strong>}
         {isModalOpen && (
           <Modal onClose={closeModal}>
