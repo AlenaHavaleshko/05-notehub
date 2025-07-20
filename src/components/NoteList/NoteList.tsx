@@ -5,11 +5,9 @@ import { deleteNote } from '../../services/noteService';
 
 interface NoteListProps {
   notes: Note[];
-  isLoading: boolean;
-  error: Error | null;
 }
 
-export default function NoteList({ notes, isLoading, error }: NoteListProps) {
+export default function NoteList({ notes }: NoteListProps) {
 
   const queryClient = useQueryClient();
 
@@ -19,9 +17,6 @@ export default function NoteList({ notes, isLoading, error }: NoteListProps) {
     queryClient.invalidateQueries({ queryKey: ["notes"] });
   },
   });
-
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
 
   return (
     <ul className={css.list}>
@@ -33,7 +28,7 @@ export default function NoteList({ notes, isLoading, error }: NoteListProps) {
             <span className={css.tag}>{note.tag}</span>
             <button type="button" 
             className={css.button} 
-            onClick={() => mutation.mutate(note.id)}>Delete</button>
+            onClick={() => mutation.mutate(note.id.toString())}>Delete</button>
           </div>
         </li>
       ))}

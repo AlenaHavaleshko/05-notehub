@@ -35,11 +35,9 @@ export default function App() {
     setCurrentPage(1);
   }, 300);
 
-  // results?.length === 0)
-
   useEffect(() => {
   if (isSuccess && data?.notes?.length === 0) {
-    toast.error("No movies found for your request.");
+    toast.error("Any notes found for your request.");
   }
 }, [isSuccess, data]);
 
@@ -48,7 +46,7 @@ export default function App() {
       <div className={css.app}>
         <header className={css.toolbar}>
           <Toaster position="top-center" />
-          <SearchBox value={searchQuery} onSearch={updateSearchQuery} />
+          <SearchBox onSearch={updateSearchQuery} />
           {isLoading && <Loader />}
           {isError && (
             <ErrorMessage
@@ -68,9 +66,7 @@ export default function App() {
         </header>
         {data?.notes && data?.notes.length > 0 && (
           <NoteList
-            notes={data?.notes ?? []}
-            isLoading={isLoading}
-            error={error}
+            notes={data?.notes}
           />
         )}
         {error && <strong>Ooops there was an error...</strong>}
