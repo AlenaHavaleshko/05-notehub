@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { Note } from '../types/note';
+import type { Note, NewNoteData } from '../types/note';
 import toast from 'react-hot-toast';
 
 export interface FetchNotesParams {
@@ -9,10 +9,11 @@ export interface FetchNotesParams {
 }
 
 interface FetchNotesResponse {
- data: Note[];
+//  data: Note[];
  total_pages: number;
  page: number;
  perPage:number;
+ notes: Note[];
 }
 
  axios.defaults.baseURL = 'https://notehub-public.goit.study/api';
@@ -24,11 +25,11 @@ interface FetchNotesResponse {
 
  export async function fetchNotes({ page = 1, perPage = 12, search, }: FetchNotesParams): Promise<FetchNotesResponse> {
   console.log('Request params:', { page, perPage, search });
-  const response = await axios.get<FetchNotesResponse>('/notes', {
+  const response = await axios.get<FetchNotesResponse>(`/notes`, {
     params: {
      page,
      perPage,
-     ...(search !== ''  && {query: search}),
+     ...(search !== ''  && {search: search}),
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -36,4 +37,37 @@ interface FetchNotesResponse {
   });
 
   return response.data;
+}
+
+export async function createNote(noteData:NewNoteData) {
+  const token = import.meta.env.VITE_NOTEHUB_TOKEN;
+
+  if (!token) {
+    toast.error('VITE_NOTEHUB_TOKEN is not defined');
+    throw new Error('Missing token');
+  }
+
+  const response = await axios.post<Note>("/notes", noteData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+  );
+  return response.data;
+}
+
+export async function deleteNote (noteId: string) {
+
+  const token = import.meta.env.VITE_NOTEHUB_TOKEN;
+
+  if (!token) {
+    toast.error('VITE_NOTEHUB_TOKEN is not defined');
+    throw new Error('Missing token');
+  } 
+
+  await axios.delete(`/notes/${noteId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    });
 }
