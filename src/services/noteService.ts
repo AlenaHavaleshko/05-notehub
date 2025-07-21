@@ -23,7 +23,7 @@ interface FetchNotesResponse {
     params: {
      page,
      perPage,
-     ...(search !== ''  && {search: search}),
+     ...(search?.trim() ? { search } : {}),
     },
     headers: {
       Authorization: `Bearer ${token}`,
@@ -32,7 +32,7 @@ interface FetchNotesResponse {
   return response.data;
 }
 
-export async function createNote(noteData:NewNoteData) {
+export async function createNote(noteData:NewNoteData): Promise<Note> {
 
   const response = await axios.post<Note>("/notes", noteData, {
     headers: {
@@ -43,9 +43,9 @@ export async function createNote(noteData:NewNoteData) {
   return response.data;
 }
 
-export async function deleteNote (noteId: string) {
+export async function deleteNote (noteId: string): Promise<Note> {
 
-  const response = await axios.delete(`/notes/${noteId}`, {
+  const response = await axios.delete<Note>(`/notes/${noteId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
